@@ -50,12 +50,6 @@
         </style>
              {% block extrahead %}
              {% endblock %}
-        <script type="text/javascript">
-            $(function(){
-                {% block jquery %}
-                {% endblock %}
-            });
-        </script>
     </head>
 
     <body>
@@ -64,7 +58,7 @@
                 <ul class = "nav nav-pills pull-right">
                     <li><a href="{% url 'home' %}">Home</a></li>
                     <li><a href="/pages/about">About</a></li>
-                    <li><a href="#">Contact</a></li>
+                    <li><a href="{% url 'contact' %}">Contact</a></li>
                 </ul>
                 <h3><span class="fui-settings-16 muted">MVP Thingy</span></h3>
             </div>
@@ -96,4 +90,11 @@
 
     <script src="http://code.jquery.com/jquery-1.11.0.min.js" type="text/javascript"></script>
     <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+        <script type="text/javascript">
+            $(function(){
+                {% block jquery %}
+                {% endblock %}
+            });
+        </script>
+
 </html>
