@@ -7,6 +7,9 @@ DJANGO_ROOT = dirname(dirname(abspath(__file__)))
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
+STRIPE_SECRET = 'sk_test_4MZWP7QCkDN6CYvD6UEO1Hni'
+STRIPE_PUBLISHABLE = 'pk_test_4MZWPSIFZr4pL0TpLe7olMIu'
+
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
@@ -73,9 +76,7 @@ STATIC_URL = '/static/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
-    # Put strings here, like "/home/html/static" or "C:/www/django/static".
-    # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths.
+    normpath(join(DJANGO_ROOT, 'static')),
 )
 
 # List of finder classes that know how to find static files in
@@ -131,6 +132,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.flatpages',
     'contact',
+    'payments',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
 )
