@@ -72,10 +72,9 @@ def register(request):
                 email = form.cleaned_data['email'],
                 last_4_digits = form.cleaned_data['last_4_digits'],
                 stripe_id = customer.id,
-                password = form.cleaned_data['password']
             )
             
-            # user.set_password(form.cleaned_data['password'])
+            user.set_password(form.cleaned_data['password'])
 
             try:
                 user.save()
