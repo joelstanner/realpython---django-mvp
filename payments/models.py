@@ -10,8 +10,12 @@ class User(AbstractBaseUser):
     stripe_id = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     USERNAME_FIELD = 'email'
-    
-def __str__(self):
-    return self.email
+
+    @classmethod
+    def get_by_id(cls, uid):
+        return User.objects.get(pk=uid)
+
+    def __str__(self):
+        return self.email

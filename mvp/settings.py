@@ -1,5 +1,6 @@
 # Django settings for mvp project.
 from os.path import abspath, dirname, normpath, join
+import sys
 
 DJANGO_ROOT = dirname(dirname(abspath(__file__)))
 
@@ -28,6 +29,9 @@ DATABASES = {
     }
 }
 
+if 'test' in sys.argv or 'test_coverage' in sys.argv: #covers regular testing and django-coverage
+    DATABASES['default']['ENGINE'] = 'django.db.backends.sqlite3'
+    
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = []
