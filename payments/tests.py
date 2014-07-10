@@ -64,24 +64,38 @@ class FormTests(FormTesterMixin, SimpleTestCase):
         form = UserForm({'name' : 'jj', 'email' : 'j@j.com',
                          'password' : '1234', 'ver_password' : '1234',
                          'last_4_digits' : '3333', 'stripe_token': '1'})
-        
+
         self.assertTrue(form.is_valid())
         #this will throw an error if it doesn't clean correctly
         self.assertIsNotNone(form.clean())
-        
+
     def test_user_form_passwords_dont_match_throws_error(self):
         form = UserForm({'name' : 'jj', 'email' : 'j@j.com',
                          'password' : '123', 'ver_password' : '1234',
                          'last_4_digits' : '3333', 'stripe_token': '1'})
-        
+
         self.assertFalse(form.is_valid())
-                
+
         self.assertRaisesMessage(forms.ValidationError,
                                  'Passwords do not match', form.clean)
 
+    def test_card_form_data_validation_for_invalid_data(self):
+        invalid_data_list = [
+            {'data': {'last_4_digits': '123'},
+                'error': ('last_4_digits', [u'Ensure this value has at least 4 characters (it has 3).'])},
+            {'data' : {'last_4_digits': '12345'},
+                'error': ('last_4_digits', [u'Ensure this value has at most 4 characters (it has 5).'])}
+        ]
+
+        for invalid_data in invalid_data_list:
+            self.assertFormError(CardForm,
+                                 invalid_data['error'][0],
+                                 invalid_data['error'][1],
+                                 invalid_data['data'])
+            
 # ---------- PAGE VIEWS TESTS ---------- #
 class ViewTesterMixin(object):
-    
+
     @classmethod
     def setupViewTester(cls, url, view_func, expected_html,
                         status_code = 200, session={}):
@@ -93,21 +107,21 @@ class ViewTesterMixin(object):
         cls.url = url
         cls.view_func = staticmethod(view_func)
         cls.expected_html = expected_html
-        
+
     def test_resolves_to_correct_view(self):
         test_view = resolve(self.url)
         self.assertEqual(test_view.func, self.view_func)
-        
+
     def test_returns_appropriate_response_code(self):
         resp = self.view_func(self.request)
         self.assertEqual(resp.status_code, self.status_code)
-        
+
     def test_returns_correct_html(self):
         resp = self.view_func(self.request)
         self.assertEqual(resp.content, self.expected_html)
-        
+
 class SignInPageTests(TestCase, ViewTesterMixin):
-    
+
     @classmethod
     def setUpClass(cls):
         html = render_to_response('sign_in.html',
@@ -116,9 +130,9 @@ class SignInPageTests(TestCase, ViewTesterMixin):
           'user': None
         })
         ViewTesterMixin.setupViewTester('/sign_in', sign_in, html.content)
-        
+
 class SignOutPageTests(TestCase, ViewTesterMixin):
-    
+
     @classmethod
     def setUpClass(cls):
         ViewTesterMixin.setupViewTester('/sign_out', sign_out, "", #redirect returns no html
@@ -129,9 +143,9 @@ class SignOutPageTests(TestCase, ViewTesterMixin):
     def setUp(self):
         #sign_out clears the session, so let's reset it everytime
         self.request.session = {"user":"dummy"}
-    
+
 class RegisterPageTests(TestCase, ViewTesterMixin):
-    
+
     @classmethod
     def setUpClass(cls):
         html = render_to_response('register.html',
@@ -147,9 +161,9 @@ class RegisterPageTests(TestCase, ViewTesterMixin):
                                         register,
                                         html.content,
                                         )
-        
+
 class EditPageTests(TestCase, ViewTesterMixin):
-    
+
     @classmethod
     def setUpClass(cls):
         ViewTesterMixin.setupViewTester('/edit',
