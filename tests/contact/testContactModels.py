@@ -1,6 +1,6 @@
 from django.test import TestCase, SimpleTestCase
-from .models import ContactForm
-from .forms import ContactView
+from contact.models import ContactForm
+from contact.forms import ContactView
 from datetime import datetime, timedelta
 
 

@@ -6,7 +6,7 @@ from django import forms
 
 from pprint import pformat
 
-from .views import index
+from main.views import index
 from payments.models import User
 from payments.forms import SigninForm, UserForm
 
