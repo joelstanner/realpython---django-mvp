@@ -6,7 +6,6 @@ from django.shortcuts import render_to_response
 from django import forms
 from django.db import IntegrityError
 
-
 from pprint import pformat
 
 from .views import sign_in, sign_out, register, edit, soon, Customer
@@ -38,8 +37,7 @@ class UserModelTest(TestCase):
         self.assertRaises(IntegrityError, User.create, "test user", "j@j.com",
                           "jj", "1234", 89)
 
-            
-            
+                        
 # ---------- FORMS TESTS ---------- #
 class FormTesterMixin():
 
@@ -106,6 +104,7 @@ class FormTests(FormTesterMixin, SimpleTestCase):
                                  invalid_data['error'][0],
                                  invalid_data['error'][1],
                                  invalid_data['data'])
+
 
 # ---------- PAGE VIEWS TESTS ---------- #
 class ViewTesterMixin(object):
