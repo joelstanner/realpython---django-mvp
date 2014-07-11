@@ -202,6 +202,7 @@ class RegisterPageTests(TestCase, ViewTesterMixin):
                              'last_4_digits' : '4242',
                              'password' : 'bad_password',
                              'ver_password' : 'bad_password',
+                             'sub_type' : 'gold',
                              }
         
         #get the return values of the mocks, for our checks later
@@ -236,7 +237,7 @@ class RegisterPageTests(TestCase, ViewTesterMixin):
         #self.assertEqual(resp.status_code, 200)
         #self.assertEqual(self.request.session, {})
         
-    def test_registering_user_twice_cause_error_msg(self):
+    def test_registering_user_twice_causes_error_msg(self):
         
         #create a user with the same email so we get an integrity error
         user = User(name='pyRock', email='python@rocks.com')
