@@ -1,0 +1,21 @@
+django1.6
+env
+
+error.log
+
+.Python
+env
+bin
+lib
+include
+
+
+## python specific
+*.pyc
+ 
+## generic files to ignore
+*~
+*.lock
+*.DS_Store
+*.swp
+*.out
