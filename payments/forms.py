@@ -25,8 +25,13 @@ class UserForm(CardForm):
                                label=(u'Password'),
                                widget=forms.PasswordInput(render_value=False))
     ver_password = forms.CharField(required = True,
-                                   label=(u' Verify Password'),
-                                   widget=forms.PasswordInput(render_value=False))
+                                 label=(u' Verify Password'),
+                                 widget=forms.PasswordInput(render_value=False))
+    PAYMENT_CHOICES = (('monthly', 'Monthly'),('yearly', 'Yearly'))
+    sub_type = forms.ChoiceField(widget=forms.RadioSelect,
+                                 label=(u'Subscription Type'),
+                                 choices=PAYMENT_CHOICES,
+                                 initial="yearly")
     def clean(self):
         cleaned_data = self.cleaned_data
         password = cleaned_data.get('password')

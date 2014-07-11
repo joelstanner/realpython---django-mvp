@@ -13,6 +13,10 @@ class User(AbstractBaseUser):
 
     USERNAME_FIELD = 'email'
 
+    def __str__(self):
+        return self.email
+
+
     @classmethod
     def get_by_id(cls, uid):
         return User.objects.get(pk=uid)
@@ -26,5 +30,4 @@ class User(AbstractBaseUser):
         new_user.save()
         return new_user
     
-    def __str__(self):
-        return self.email
+    

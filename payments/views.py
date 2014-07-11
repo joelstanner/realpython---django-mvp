@@ -51,21 +51,21 @@ def register(request):
     if request.method == 'POST':
         form = UserForm(request.POST)
         if form.is_valid():
-
-            #update based on your billing method(subscribtion vs onetime)
-            customer = stripe.Customer.create(
-                email = form.cleaned_data['email'],
-                description = form.cleaned_data['name'],
-                card = form.cleaned_data['stripe_token'],
-                plan="gold",
-            )
-
-            # customer = stripe.Charge.create(
-            # description = form.cleaned_data['email'],
-            # card = form.cleaned_data['stripe_token'],
-            # amount="5000",
-            # currency="usd"
-            # )
+            if form.cleaned_data['sub_type'] == 'monthly':
+                #update based on your billing method(subscription vs onetime)
+                customer = Customer.create(
+                    email = form.cleaned_data['email'],
+                    description = form.cleaned_data['name'],
+                    card = form.cleaned_data['stripe_token'],
+                    plan="gold",
+                )
+            else:
+                customer = Customer.create(
+                    email = form.cleaned_data['email'],
+                    description = form.cleaned_data['name'],
+                    card = form.cleaned_data['stripe_token'],
+                    plan = "Platinum",
+                )
 
             cd = form.cleaned_data
             try:
@@ -129,3 +129,13 @@ def edit(request):
         context_instance=RequestContext(request)
     )
 
+class Customer(object):
+    
+    @classmethod
+    def create(cls, sub_type="yearly", **kwargs):
+        if sub_type == "yearly":
+            return stripe.Customer.create(**kwargs)
+        elif sub_type == "monthly":
+            return stripe.Charge.create(**kwargs)
+            
+            
