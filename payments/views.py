@@ -53,14 +53,14 @@ def register(request):
         if form.is_valid():
             if form.cleaned_data['sub_type'] == 'monthly':
                 #update based on your billing method(subscription vs onetime)
-                customer = stripe.Customer.create(
+                customer = Customer.create(
                     email = form.cleaned_data['email'],
                     description = form.cleaned_data['name'],
                     card = form.cleaned_data['stripe_token'],
                     plan="gold",
                 )
             else:
-                customer = stripe.Customer.create(
+                customer = Customer.create(
                     email = form.cleaned_data['email'],
                     description = form.cleaned_data['name'],
                     card = form.cleaned_data['stripe_token'],
@@ -129,3 +129,13 @@ def edit(request):
         context_instance=RequestContext(request)
     )
 
+class Customer(object):
+    
+    @classmethod
+    def create(cls, sub_type="yearly", **kwargs):
+        if sub_type == "yearly":
+            return stripe.Customer.create(**kwargs)
+        elif sub_type == "monthly":
+            return stripe.Charge.create(**kwargs)
+            
+            

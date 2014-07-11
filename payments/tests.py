@@ -4,10 +4,12 @@ from django.test import TestCase, SimpleTestCase, RequestFactory
 from django.core.urlresolvers import resolve
 from django.shortcuts import render_to_response
 from django import forms
+from django.db import IntegrityError
+
 
 from pprint import pformat
 
-from .views import sign_in, sign_out, register, edit, soon
+from .views import sign_in, sign_out, register, edit, soon, Customer
 from .models import User
 from .forms import SigninForm, CardForm, UserForm
 
@@ -27,16 +29,17 @@ class UserModelTest(TestCase):
 
     def test_get_by_id(self):
         self.assertEqual(User.get_by_id(1), self.test_user)
-        
+
     def test_create_user_function_stores_in_database(self):
         user = User.create("test", "test@t.com", "tt", "1234", "22")
         self.assertEqual(User.objects.get(email="test@t.com"), user)
-        
+
     def test_create_user_already_exists_throws_IntegrityError(self):
-        from django.db import IntegrityError
         self.assertRaises(IntegrityError, User.create, "test user", "j@j.com",
                           "jj", "1234", 89)
 
+            
+            
 # ---------- FORMS TESTS ---------- #
 class FormTesterMixin():
 
@@ -72,7 +75,8 @@ class FormTests(FormTesterMixin, SimpleTestCase):
     def test_user_form_passwords_match(self):
         form = UserForm({'name' : 'jj', 'email' : 'j@j.com',
                          'password' : '1234', 'ver_password' : '1234',
-                         'last_4_digits' : '3333', 'stripe_token': '1'})
+                         'last_4_digits' : '3333', 'stripe_token': '1',
+                         'sub_type' : 'yearly'})
 
         self.assertTrue(form.is_valid())
         #this will throw an error if it doesn't clean correctly
@@ -81,7 +85,8 @@ class FormTests(FormTesterMixin, SimpleTestCase):
     def test_user_form_passwords_dont_match_throws_error(self):
         form = UserForm({'name' : 'jj', 'email' : 'j@j.com',
                          'password' : '123', 'ver_password' : '1234',
-                         'last_4_digits' : '3333', 'stripe_token': '1'})
+                         'last_4_digits' : '3333', 'stripe_token': '1',
+                         'sub_type' : 'yearly'})
 
         self.assertFalse(form.is_valid())
 
@@ -101,7 +106,7 @@ class FormTests(FormTesterMixin, SimpleTestCase):
                                  invalid_data['error'][0],
                                  invalid_data['error'][1],
                                  invalid_data['data'])
-            
+
 # ---------- PAGE VIEWS TESTS ---------- #
 class ViewTesterMixin(object):
 
@@ -174,26 +179,26 @@ class RegisterPageTests(TestCase, ViewTesterMixin):
     def setUp(self):
         request_factory = RequestFactory()
         self.request = request_factory.get(self.url)
-        
+
     def test_invalid_form_returns_registration_page(self):
-        
+
         with mock.patch('payments.forms.UserForm.is_valid') as user_mock:
-            
+
             user_mock.return_value = False
-            
+
             self.request.method = 'POST'
             self.request.POST = None
             resp = register(self.request)
             self.assertEqual(resp.content, self.expected_html)
-            
+
             #make sure that we did indeed call our is_valid funciton
             self.assertEqual(user_mock.call_count, 1)
-    
-    @mock.patch('stripe.Customer.create')
-    @mock.patch(User, 'create')
+
+    @mock.patch('payments.views.Customer.create')
+    @mock.patch.object(User, 'create')
     def test_registering_new_user_returns_successfully(self, create_mock,
                                                        stripe_mock):
-        
+
         self.request.session = {}
         self.request.method = 'POST'
         self.request.POST = {'email' : 'python@rocks.com',
@@ -202,92 +207,84 @@ class RegisterPageTests(TestCase, ViewTesterMixin):
                              'last_4_digits' : '4242',
                              'password' : 'bad_password',
                              'ver_password' : 'bad_password',
-                             'sub_type' : 'gold',
+                             'sub_type' : 'yearly',
                              }
-        
+
         #get the return values of the mocks, for our checks later
         new_user = create_mock.return_value
         new_cust = stripe_mock.return_value
-        
+
         resp = register(self.request)
-        
+
         self.assertEqual(resp.content, "")
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(self.request.session['user'], new_user.pk)
         #verify the user was actually stored in the db.
-        
+
         create_mock.assert_called_with('pyRock', 'python@rocks.com',
                                        'bad_password', '4242', new_cust.id)
+    
+    #MockUserForm made for tests
+    def get_MockUserForm(self):
+        from django import forms
         
-        #with mock.patch('stripe.Customer') as stripe_mock:
-        #    
-        #    config = {'create.return_value': mock.Mock()}
-        #    stripe_mock.configure_mock(**config)
-        #    
-        #    resp = register(self.request)
-        #    self.assertEqual(resp.content, "")
-        #    self.assertEqual(resp.status_code, 302)
-        #    self.assertEqual(self.request.session['user'], 1)
-        #    
-        #    #verify the user was actually stored in the database.
-        #    #if not, this will throw an error
-        #    db_user = User.objects.get(email='python@rocks.com')
-        
-        #resp = register(self.request)
-        #self.assertEqual(resp.status_code, 200)
-        #self.assertEqual(self.request.session, {})
-        
-    def test_registering_user_twice_causes_error_msg(self):
-        
-        #create a user with the same email so we get an integrity error
-        user = User(name='pyRock', email='python@rocks.com')
-        user.save()
-        
+        class MockUserForm(forms.Form):
+            
+            def is_valid(self):
+                return True
+            
+            @property
+            def cleaned_data(self):
+                return{'email': 'python@rocks.com',
+                       'name': 'pyRock',
+                       'stripe_token' : '...',
+                       'last_4_digits': '4242',
+                       'password': 'bad_password',
+                       'ver_password:': 'bad_password',
+                       'sub_type': 'yearly'
+                       }
+            
+            def addError(self, error):
+                pass
+            
+        return MockUserForm()
+    
+    @mock.patch('payments.views.UserForm', get_MockUserForm)
+    @mock.patch('payments.models.User.save', side_effect=IntegrityError)
+    def test_registering_user_twice_causes_error_msg(self, save_mock):
+
         #now create the request used to test the view
         self.request.session = {}
         self.request.method = 'POST'
-        self.request.POST = {'email' : 'python@rocks.com',
-                             'name' : 'pyRock',
-                             'stripe_token' : '...',
-                             'last_4_digits' : '4242',
-                             'password' : 'bad_password',
-                             'ver_password' : 'bad_password',    
-                            }
-        
-        #create our expected form
-        expected_form = UserForm(self.request.POST)
-        expected_form.is_valid()
-        expected_form.addError('python@rocks.com is already a member')
+        self.request.POST = {}
         
         #create the expected html
         html = render_to_response('register.html',
-                                  {'form': expected_form,
+                                  {'form': self.get_MockUserForm,
                                    'months': range(1, 12),
                                    'publishable': settings.STRIPE_PUBLISHABLE,
                                    'soon': soon(),
                                    'user': None,
                                    'years': range(2011, 2036),
                                    })
-        
+
         #mock out stripe so we don't hit their server
         with mock.patch('stripe.Customer') as stripe_mock:
-            
+
             config = {'create.return_value': mock.Mock()}
             stripe_mock.configure_mock(**config)
-            
+
             #run the test
             resp = register(self.request)
-            
+
             #verify that we did things correctly
+            self.assertEqual(resp.content, html.content)
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(self.request.session, {})
-            
-            #assert there is only one record in the database
+
+            #assert there are no records in the database
             users = User.objects.filter(email="python@rocks.com")
-            self.assertEqual(len(users), 1)
-            
-            #verify HTML being returned is correct
-            self.assertEqual(resp.content, html.content)
+            self.assertEqual(len(users), 0)
 
 class EditPageTests(TestCase, ViewTesterMixin):
 
@@ -298,3 +295,25 @@ class EditPageTests(TestCase, ViewTesterMixin):
                                         '', #redirect returns no html
                                         status_code=302,
                                         )
+
+class CustomerTests(TestCase):
+    
+    def test_create_yearly_billing(self):
+        with mock.patch('stripe.Customer.create') as create_mock:
+            
+            cust_data = {'description': 'test user', 'email': 'test@test.com',
+                         'card': '4242', 'plan': 'platinum'}
+            cust = Customer.create("yearly", **cust_data)
+            
+            create_mock.assert_called_with(**cust_data)
+
+    def test_create_monthly_billing(self):
+        
+        with mock.patch('stripe.Charge.create') as charge_mock:
+            
+            cust_data = {'description': 'test user', 'email': 'test@test.com',
+                         'card': '4242', 'plan': 'gold'}
+            
+            cust = Customer.create("monthly", **cust_data)
+            
+            charge_mock.assert_called_with(**cust_data)
