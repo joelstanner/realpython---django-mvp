@@ -50,7 +50,7 @@ class SignOutPageTests(TestCase, ViewTesterMixin):
 
     @classmethod
     def setUpClass(cls):
-        ViewTesterMixin.setupViewTester('/sign_out', sign_out, "", #redirect returns no html
+        ViewTesterMixin.setupViewTester('/sign_out', sign_out, b'', #redirect returns empty bytestring
                                         status_code=302,
                                         session={"user":"dummy"},
                                         )
@@ -70,11 +70,11 @@ class RegisterPageTests(TestCase, ViewTesterMixin):
         html = render_to_response('register.html',
                                   {
                                     'form': UserForm(),
-                                    'months': range(1,12),
+                                    'months': list(range(1,12)),
                                     'publishable': settings.STRIPE_PUBLISHABLE,
                                     'soon': soon(),
                                     'user': None,
-                                    'years': range(2011, 2036),
+                                    'years': list(range(2011, 2036)),
                                   })
         ViewTesterMixin.setupViewTester('/register',
                                         register,
@@ -121,7 +121,7 @@ class RegisterPageTests(TestCase, ViewTesterMixin):
 
         resp = register(self.request)
 
-        self.assertEqual(resp.content, "")
+        self.assertEqual(resp.content, b"")
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(self.request.session['user'], new_user.pk)
         #verify the user was actually stored in the db.
@@ -166,11 +166,11 @@ class RegisterPageTests(TestCase, ViewTesterMixin):
         #create the expected html
         html = render_to_response('register.html',
                                   {'form': self.get_MockUserForm,
-                                   'months': range(1, 12),
+                                   'months': list(range(1, 12)),
                                    'publishable': settings.STRIPE_PUBLISHABLE,
                                    'soon': soon(),
                                    'user': None,
-                                   'years': range(2011, 2036),
+                                   'years': list(range(2011, 2036)),
                                    })
 
         #mock out stripe so we don't hit their server
@@ -197,6 +197,6 @@ class EditPageTests(TestCase, ViewTesterMixin):
     def setUpClass(cls):
         ViewTesterMixin.setupViewTester('/edit',
                                         edit,
-                                        '', #redirect returns no html
+                                        b'', #redirect returns no html
                                         status_code=302,
                                         )

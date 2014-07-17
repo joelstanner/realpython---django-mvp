@@ -19,3 +19,4 @@ include
 *.DS_Store
 *.swp
 *.out
+*.bak

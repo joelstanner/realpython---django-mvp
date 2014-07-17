@@ -28,11 +28,11 @@ class MainPageTests(TestCase):
 
     def test_returns_appropriate_html_response_code(self):
         resp = index(self.request)
-        self.assertEquals(resp.status_code,200)
+        self.assertEqual(resp.status_code,200)
 
     def test_returns_exact_html(self):
         resp = index(self.request)
-        self.assertEquals(resp.content,
+        self.assertEqual(resp.content,
                           render_to_response("index.html").content)
 
     def test_index_handles_logged_in_user(self):

@@ -1,0 +1,94 @@
+--- django-mvp/payments/forms.py	(original)
++++ django-mvp/payments/forms.py	(refactored)
+@@ -22,14 +22,14 @@
+     name = forms.CharField(required = True)
+     email = forms.EmailField(required = True)
+     password = forms.CharField(required = True,
+-                               label=(u'Password'),
++                               label=('Password'),
+                                widget=forms.PasswordInput(render_value=False))
+     ver_password = forms.CharField(required = True,
+-                                 label=(u' Verify Password'),
++                                 label=(' Verify Password'),
+                                  widget=forms.PasswordInput(render_value=False))
+     PAYMENT_CHOICES = (('monthly', 'Monthly'),('yearly', 'Yearly'))
+     sub_type = forms.ChoiceField(widget=forms.RadioSelect,
+-                                 label=(u'Subscription Type'),
++                                 label=('Subscription Type'),
+                                  choices=PAYMENT_CHOICES,
+                                  initial="yearly")
+     def clean(self):
+--- django-mvp/payments/views.py	(original)
++++ django-mvp/payments/views.py	(refactored)
+@@ -31,7 +31,7 @@
+     else:
+         form = SigninForm()
+ 
+-    print form.non_field_errors()
++    print(form.non_field_errors())
+ 
+     return render_to_response(
+         'sign_in.html',
+@@ -85,11 +85,11 @@
+         'register.html',
+         {
+             'form': form,
+-            'months': range(1, 12),
++            'months': list(range(1, 12)),
+             'publishable': settings.STRIPE_PUBLISHABLE,
+             'soon': soon(),
+             'user': user,
+-            'years': range(2011, 2036),
++            'years': list(range(2011, 2036)),
+         },
+         context_instance=RequestContext(request)
+     )
+@@ -124,8 +124,8 @@
+             'form': form,
+             'publishable': settings.STRIPE_PUBLISHABLE,
+             'soon': soon(),
+-            'months': range(1, 12),
+-            'years': range(2011, 2036)
++            'months': list(range(1, 12)),
++            'years': list(range(2011, 2036))
+         },
+         context_instance=RequestContext(request)
+     )
+--- django-mvp/payments/migrations/0001_initial.py	(original)
++++ django-mvp/payments/migrations/0001_initial.py	(refactored)
+@@ -9,8 +9,8 @@
+ 
+     def forwards(self, orm):
+         # Adding model 'User'
+-        db.create_table(u'payments_user', (
+-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
++        db.create_table('payments_user', (
++            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+             ('password', self.gf('django.db.models.fields.CharField')(max_length=128)),
+             ('last_login', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
+             ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
+@@ -20,20 +20,20 @@
+             ('created_at', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+             ('updated_at', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+         ))
+-        db.send_create_signal(u'payments', ['User'])
++        db.send_create_signal('payments', ['User'])
+ 
+ 
+     def backwards(self, orm):
+         # Deleting model 'User'
+-        db.delete_table(u'payments_user')
++        db.delete_table('payments_user')
+ 
+ 
+     models = {
+-        u'payments.user': {
++        'payments.user': {
+             'Meta': {'object_name': 'User'},
+             'created_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+             'email': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
+-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
++            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+             'last_4_digits': ('django.db.models.fields.CharField', [], {'max_length': '4', 'null': 'True', 'blank': 'True'}),
+             'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),

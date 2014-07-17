@@ -9,7 +9,7 @@ class ContactForm(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True,
                                      default=datetime.datetime.now)
     
-    def __unicode__(self):
+    def __str__(self):
         return self.email
     
     class Meta:
