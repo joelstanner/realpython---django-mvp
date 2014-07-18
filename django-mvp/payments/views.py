@@ -7,6 +7,7 @@ from payments.models import User
 import mvp.settings as settings
 import stripe
 import datetime
+import socket
 
 stripe.api_key = settings.STRIPE_SECRET
 
@@ -70,7 +71,12 @@ def register(request):
             cd = form.cleaned_data
             try:
                 user = User.create(cd['name'],cd['email'], cd['password'],
-                cd['last_4_digits'], customer.id)
+                                   cd['last_4_digits'])
+                
+                if customer:
+                    user.stripe_id = customer.id
+                    user.save()
+                    
             except IntegrityError:
                 form.addError(cd['email'] + ' is already a member')
                 user = None
