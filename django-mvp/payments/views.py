@@ -134,9 +134,12 @@ class Customer(object):
     
     @classmethod
     def create(cls, sub_type="yearly", **kwargs):
-        if sub_type == "yearly":
-            return stripe.Customer.create(**kwargs)
-        elif sub_type == "monthly":
-            return stripe.Charge.create(**kwargs)
+        try:
+            if sub_type == "yearly":
+                return stripe.Customer.create(**kwargs)
+            elif sub_type == "monthly":
+                return stripe.Charge.create(**kwargs)
+        except socket.error:
+            return None
             
             
