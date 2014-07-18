@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
 from payments.forms import PaymentForm, SigninForm, CardForm, UserForm
-from payments.models import User
+from payments.models import User, Unpaid_users
 import mvp.settings as settings
 import stripe
 import datetime
@@ -76,10 +76,11 @@ def register(request):
                 if customer:
                     user.stripe_id = customer.id
                     user.save()
+                else:
+                    Unpaid_users(email=cd['email']).save()
                     
             except IntegrityError:
                 form.addError(cd['email'] + ' is already a member')
-                user = None
             else:
                 request.session['user'] = user.pk
                 return HttpResponseRedirect('/')

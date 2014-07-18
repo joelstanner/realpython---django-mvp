@@ -1,6 +1,6 @@
 from payments.views import sign_in, sign_out, register, edit
 from django.test import TestCase, RequestFactory
-from payments.models import User
+from payments.models import User, Unpaid_users
 from django.db import IntegrityError
 
 import mock
@@ -59,7 +59,7 @@ class SignOutPageTests(TestCase, ViewTesterMixin):
                                         )
 
     def setUp(self):
-        #sign_out clears the session, so let's reset it everytime
+        #sign_out clears the session, so let's reset it every time
         self.request.session = {"user":"dummy"}
 
 
@@ -99,7 +99,7 @@ class RegisterPageTests(TestCase, ViewTesterMixin):
             resp = register(self.request)
             self.assertEqual(resp.content, self.expected_html)
 
-            #make sure that we did indeed call our is_valid funciton
+            #make sure that we did indeed call our is_valid function
             self.assertEqual(user_mock.call_count, 1)
 
     def get_mock_cust():
@@ -168,7 +168,7 @@ class RegisterPageTests(TestCase, ViewTesterMixin):
         self.request.method = 'POST'
         self.request.POST = {}
 
-        #create the expected html
+        #create the expected HTML
         html = render_to_response('register.html',
                                   {'form': self.get_MockUserForm,
                                    'months': list(range(1, 12)),
@@ -221,6 +221,11 @@ class RegisterPageTests(TestCase, ViewTesterMixin):
             users = User.objects.filter(email="python@rocks.com")
             self.assertEqual(len(users), 1)
             self.assertEqual(users[0].stripe_id, '')
+            
+        #check the associated table got created
+        unpaid = Unpaid_users.objects.filter(email="python@rocks.com")
+        self.assertEqual(len(unpaid), 1)
+        self.assertIsNotNone(unpaid[0].last_notification)
 
 class EditPageTests(TestCase, ViewTesterMixin):
 
