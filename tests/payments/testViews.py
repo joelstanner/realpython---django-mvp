@@ -1,8 +1,11 @@
 from payments.views import sign_in, sign_out, register, edit
 from django.test import TestCase, RequestFactory
-from payments.models import User
+from payments.models import User, UnpaidUsers
 from django.db import IntegrityError
+
 import mock
+import socket
+
 from django.core.urlresolvers import resolve
 from django.shortcuts import render_to_response
 from payments.forms import SigninForm, CardForm, UserForm
@@ -56,7 +59,7 @@ class SignOutPageTests(TestCase, ViewTesterMixin):
                                         )
 
     def setUp(self):
-        #sign_out clears the session, so let's reset it everytime
+        #sign_out clears the session, so let's reset it every time
         self.request.session = {"user":"dummy"}
 
 
@@ -96,13 +99,20 @@ class RegisterPageTests(TestCase, ViewTesterMixin):
             resp = register(self.request)
             self.assertEqual(resp.content, self.expected_html)
 
-            #make sure that we did indeed call our is_valid funciton
+            #make sure that we did indeed call our is_valid function
             self.assertEqual(user_mock.call_count, 1)
 
-    @mock.patch('payments.views.Customer.create')
-    @mock.patch.object(User, 'create')
-    def test_registering_new_user_returns_successfully(self, create_mock,
-                                                       stripe_mock):
+    def get_mock_cust():
+        class mock_cust():
+            @property
+            def id(self):
+                return 1234
+
+        return mock_cust()
+
+    @mock.patch('payments.views.Customer.create',
+                return_value = get_mock_cust())
+    def test_registering_new_user_returns_successfully(self, stripe_mock):
 
         self.request.session = {}
         self.request.method = 'POST'
@@ -115,29 +125,24 @@ class RegisterPageTests(TestCase, ViewTesterMixin):
                              'sub_type' : 'yearly',
                              }
 
-        #get the return values of the mocks, for our checks later
-        new_user = create_mock.return_value
-        new_cust = stripe_mock.return_value
-
         resp = register(self.request)
 
         self.assertEqual(resp.content, b"")
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(self.request.session['user'], new_user.pk)
-        #verify the user was actually stored in the db.
 
-        create_mock.assert_called_with('pyRock', 'python@rocks.com',
-                                       'bad_password', '4242', new_cust.id)
-    
+        users = User.objects.filter(email="python@rocks.com")
+        self.assertEqual(len(users), 1)
+        self.assertEqual(users[0].stripe_id, '1234')
+
     #MockUserForm made for tests
     def get_MockUserForm(self):
         from django import forms
-        
+
         class MockUserForm(forms.Form):
-            
+
             def is_valid(self):
                 return True
-            
+
             @property
             def cleaned_data(self):
                 return{'email': 'python@rocks.com',
@@ -148,12 +153,12 @@ class RegisterPageTests(TestCase, ViewTesterMixin):
                        'ver_password:': 'bad_password',
                        'sub_type': 'yearly'
                        }
-            
+
             def addError(self, error):
                 pass
-            
+
         return MockUserForm()
-    
+
     @mock.patch('payments.views.UserForm', get_MockUserForm)
     @mock.patch('payments.models.User.save', side_effect=IntegrityError)
     def test_registering_user_twice_causes_error_msg(self, save_mock):
@@ -162,8 +167,8 @@ class RegisterPageTests(TestCase, ViewTesterMixin):
         self.request.session = {}
         self.request.method = 'POST'
         self.request.POST = {}
-        
-        #create the expected html
+
+        #create the expected HTML
         html = render_to_response('register.html',
                                   {'form': self.get_MockUserForm,
                                    'months': list(range(1, 12)),
@@ -191,12 +196,75 @@ class RegisterPageTests(TestCase, ViewTesterMixin):
             users = User.objects.filter(email="python@rocks.com")
             self.assertEqual(len(users), 0)
 
+    def test_registering_user_when_stripe_is_down(self):
+
+        #create the request used to test the view
+        self.request.session = {}
+        self.request.method = 'POST'
+        self.request.POST = {'email' : 'python@rocks.com',
+                             'name' : 'pyRock',
+                             'stripe_token' : '...',
+                             'last_4_digits' : '4242',
+                             'password' : 'bad_password',
+                             'ver_password' : 'bad_password',
+                             'sub_type' : 'yearly',
+                             }
+
+        #mock stripe and ask it to throw a connection error
+        with mock.patch('stripe.Customer.create', side_effect =
+                        socket.error("Can't connect to Stripe")) as stripe_mock:
+
+            #run the test
+            resp = register(self.request)
+
+            #assert the is a record in the database without Stripe ID.
+            users = User.objects.filter(email="python@rocks.com")
+            self.assertEqual(len(users), 1)
+            self.assertEqual(users[0].stripe_id, '')
+
+        #check the associated table got created
+        unpaid = UnpaidUsers.objects.filter(email="python@rocks.com")
+        self.assertEqual(len(unpaid), 1)
+        self.assertIsNotNone(unpaid[0].last_notification)
+
+    @mock.patch('payments.models.UnpaidUsers.save',
+                side_effect = IntegrityError)
+    def test_registering_user_when_stripe_is_down_all_or_nothing(self,
+                                                                 save_mock):
+        #create the request used to test the view
+        self.request.session = {}
+        self.request.method='POST'
+        self.request.POST={'email' : 'python@rocks.com',
+                           'name' : 'pyRock',
+                           'stripe_token' : '...',
+                           'last_4_digits' : '4242',
+                           'password' : 'bad_password',
+                           'ver_password' : 'bad_password',
+                           'sub_type' : 'yearly',
+                           }
+
+        #mock out stripe and ask it to throw a connection error
+        with mock.patch('stripe.Customer.create', side_effect =
+                        socket.error("can't connect to stripe")) as stripe_mock:
+
+            #run the test
+            resp = register(self.request)
+
+            #assert there is no new record in the database
+            users = User.objects.filter(email="python@rocks.com")
+            self.assertEqual(len(users), 0)
+
+            #check the associated table has no updated data
+            unpaid = UnpaidUsers.objects.filter(email="python@rocks.com")
+            self.assertEqual(len(unpaid), 0)
+
+
 class EditPageTests(TestCase, ViewTesterMixin):
 
     @classmethod
     def setUpClass(cls):
         ViewTesterMixin.setupViewTester('/edit',
                                         edit,
-                                        b'', #redirect returns no html
+                                        b'', #redirect returns no HTML
                                         status_code=302,
                                         )
