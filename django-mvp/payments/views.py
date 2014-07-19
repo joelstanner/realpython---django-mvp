@@ -1,9 +1,9 @@
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
 from payments.forms import PaymentForm, SigninForm, CardForm, UserForm
-from payments.models import User, Unpaid_users
+from payments.models import User, UnpaidUsers
 import mvp.settings as settings
 import stripe
 import datetime
@@ -70,15 +70,16 @@ def register(request):
 
             cd = form.cleaned_data
             try:
-                user = User.create(cd['name'],cd['email'], cd['password'],
-                                   cd['last_4_digits'])
-                
-                if customer:
-                    user.stripe_id = customer.id
-                    user.save()
-                else:
-                    Unpaid_users(email=cd['email']).save()
+                with transaction.atomic():
+                    user = User.create(cd['name'],cd['email'], cd['password'],
+                                       cd['last_4_digits'])
                     
+                    if customer:
+                        user.stripe_id = customer.id
+                        user.save()
+                    else:
+                        UnpaidUsers(email=cd['email']).save()
+                        
             except IntegrityError:
                 form.addError(cd['email'] + ' is already a member')
             else:
