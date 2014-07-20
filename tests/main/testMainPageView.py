@@ -33,7 +33,7 @@ class MainPageTests(TestCase):
     def test_returns_exact_html(self):
         resp = index(self.request)
         self.assertEqual(resp.content,
-                          render_to_response("index.html").content)
+                          render_to_response("main/index.html").content)
 
     def test_index_handles_logged_in_user(self):
         #create a session that appears to have a logged in user
@@ -52,7 +52,7 @@ class MainPageTests(TestCase):
             self.request.session = {}
 
             #verify it returns the page for the logged in user
-            expectedHtml = render_to_response('user.html',
+            expectedHtml = render_to_response('main/user.html',
                                               {'user':user_mock.get_by_id(1)})
             self.assertEqual(resp.content, expectedHtml.content)
 

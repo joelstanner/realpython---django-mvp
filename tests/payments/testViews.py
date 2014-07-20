@@ -42,7 +42,7 @@ class SignInPageTests(TestCase, ViewTesterMixin):
 
     @classmethod
     def setUpClass(cls):
-        html = render_to_response('paymetns/sign_in.html',
+        html = render_to_response('payments/sign_in.html',
         {
           'form': SigninForm(),
           'user': None
