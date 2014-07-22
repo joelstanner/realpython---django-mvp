@@ -26,9 +26,9 @@ def sign_in(request):
                     request.session['user'] = results[0].pk
                     return HttpResponseRedirect('/')
                 else:
-                    form.addError('Incorrect email address or password')
+                    form.addError('incorrect email address or password')
             else:
-                form.addError('Incorrect email address or password')
+                form.addError('incorrect email address or password')
     else:
         form = SigninForm()
 
