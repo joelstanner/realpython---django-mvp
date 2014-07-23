@@ -6,7 +6,7 @@ from django import forms
 
 from pprint import pformat
 
-from main.views import index
+from main.views import index, market_items
 from payments.models import User
 from payments.forms import SigninForm, UserForm
 
@@ -29,11 +29,13 @@ class MainPageTests(TestCase):
     def test_returns_appropriate_html_response_code(self):
         resp = index(self.request)
         self.assertEqual(resp.status_code,200)
-
+    
     def test_returns_exact_html(self):
         resp = index(self.request)
         self.assertEqual(resp.content,
-                          render_to_response("main/index.html").content)
+                          render_to_response("main/index.html",
+                                             {"marketing_items":market_items}
+                                             ).content)
 
     def test_index_handles_logged_in_user(self):
         #create a session that appears to have a logged in user
