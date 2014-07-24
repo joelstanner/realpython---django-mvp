@@ -8,8 +8,8 @@ DJANGO_ROOT = dirname(dirname(abspath(__file__)))
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-STRIPE_SECRET = 'sk_test_4MZWP7QCkDN6CYvD6UEO1Hni'
-STRIPE_PUBLISHABLE = 'pk_test_4MZWPSIFZr4pL0TpLe7olMIu'
+STRIPE_SECRET = 'sk_test_4ScRm5lrhiBxc9L5jJATs5ep'
+STRIPE_PUBLISHABLE = 'pk_test_4ScRsYPLvrKCZr9ikclOyL4F'
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),

@@ -23,41 +23,38 @@
     {% block extra_css %}
     {% endblock %}
   </head>
+  
   <body>
     <!---------- NAVBAR ---------->
-    <div class="navbar-wrapper">
-        <div class="container">
+  <div class="container">
             
-          <nav class="navbar navbar-inverse navbar-static-top" role="navigation">
-            <div class="container">
-              <header class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="sr-only">Toggle Navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="#">Mos Eisley's Cantina</a>
-              </header>
-              <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                  <li class="active"><a href="{% url 'home' %}">Home</a></li>
-                  <li><a href="/pages/about">About</a></li>
-                  <li><a href="{% url 'contact' %}">Contact</a></li>
-                  {% if user %}
-                    <li><a href="{% url 'sign_out' %}">Logout</a></li>
-                    {% else %}
-                      <li><a href="{% url 'sign_in' %}">Login</a></li>
-                      <li><a href="{% url 'register' %}">Register</a></li>
-                  {% endif %}
-                </ul>
-              </div><!-- end navbar links -->
-            </div><!-- end container -->
-          </nav><!-- end navbar -->
-        </div><!-- end navbar container -->
-    </div><!-- end navbar wrapper -->
+    <nav class="navbar navbar-inverse navbar-static-top" role="navigation">
+        <header class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="sr-only">Toggle Navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Mos Eisley's Cantina</a>
+        </header>
+        
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="{% url 'home' %}">Home</a></li>
+            <li><a href="/pages/about">About</a></li>
+            <li><a href="{% url 'contact' %}">Contact</a></li>
+            {% if user %}
+              <li><a href="{% url 'sign_out' %}">Logout</a></li>
+              {% else %}
+                <li><a href="{% url 'sign_in' %}">Login</a></li>
+                <li><a href="{% url 'register' %}">Register</a></li>
+            {% endif %}
+          </ul>
+        </div><!-- end navbar links -->
+    </nav><!-- end navbar -->
     
-    <section class="container">
+    <section>
       <div id="messages">
         {% if messages %}
         {% for message in messages %}
@@ -72,12 +69,22 @@
       {% block content %}
       {% endblock %}
 
-    <footer>
+      <footer>
         <p class="pull-right"><a href="">Back to top</a></p>
         <p class="pull-left">&copy; 2014 <a href="http://joelstanner.com">The Jedi Council</a></p>
         <p class="text-center"> &middot; Powered by about 42 AT-AT Walkers, Python 3 and Django 1.6 &middot;</p>
-    </footer>
+      </footer>
+      
+    </section>
+  </div>  
+    
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://js.stripe.com/v2/" type="text/javascript"></script>
+    <script type="text/javascript">
+      //<![CDATA[
+      Stripe.publishableKey = '{{ publishable }}';
+      //]]>
+    </script>   
     <script src="{% static "js/jquery-1.11.1.min.js" %}"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="{% static "js/bootstrap.min.js" %}"></script>

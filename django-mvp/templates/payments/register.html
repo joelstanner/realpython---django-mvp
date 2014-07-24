@@ -5,9 +5,8 @@
 {% endblock %}
 {% block content %}
   <div class="container">
-    <form id="user_form" accept-charset="UTF-8" action="{% url 'register' %}" class="form-register"  method="post" role="form">
+    <form id="user_form" accept-charset="UTF-8" action="{% url 'register' %}" class="form-register"  method="post" role="form">{% csrf_token %}
       <h2 class="form-register-heading">Register</h2>
-      {% csrf_token %}
       {% if form.is_bound and not form.is_valid %}
         <div class="alert alert-{{error.tags}}"> <a class="close" data-dismiss="alert">×</a>
           <div class="errors">
