@@ -3,10 +3,12 @@ from django.test import TestCase, SimpleTestCase, RequestFactory
 from django.core.urlresolvers import resolve
 from django.shortcuts import render_to_response
 from django import forms
+from main.models import MarketingItem
+
 
 from pprint import pformat
 
-from main.views import index, market_items
+from main.views import index
 from payments.models import User
 from payments.forms import SigninForm, UserForm
 
@@ -32,6 +34,7 @@ class MainPageTests(TestCase):
     
     def test_returns_exact_html(self):
         resp = index(self.request)
+        market_items = MarketingItem.objects.all()
         self.assertEqual(resp.content,
                           render_to_response("main/index.html",
                                              {"marketing_items":market_items}

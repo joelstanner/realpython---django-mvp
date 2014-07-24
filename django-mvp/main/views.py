@@ -1,6 +1,7 @@
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from payments.models import User
+from main.models import MarketingItem
 
 
 class market_item(object):
@@ -34,6 +35,7 @@ market_items = [market_item(img="yoda.jpg", heading="Hone your Jedi Skills",
 
 def index(request):
     uid = request.session.get('user')
+    market_items = MarketingItem.objects.all()
     if uid is None:
         return render_to_response('main/index.html',
                                   {'marketing_items':market_items})
