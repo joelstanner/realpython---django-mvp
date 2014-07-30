@@ -6,10 +6,11 @@ register = template.Library()
 
 @register.simple_tag
 def gravatar_img(email, size=140):
-    url = get_url(email, size)
+    url = gravatar_url(email, size)
     return '''<img class="img-circle" src="%s" height="%s" width="%s" alt="user.avatar" />''' % (url, size, size)
   
-def get_url(email, size=140):
+@register.simple_tag
+def gravatar_url(email, size=140):
     default = 'http://img1.wikia.nocookie.net/__cb20091118055536/starwars/images/e/e2/SwKOTOR25cropped.jpg'
     query_params = urlencode([('s', str(size)), ('d', default)])
     
