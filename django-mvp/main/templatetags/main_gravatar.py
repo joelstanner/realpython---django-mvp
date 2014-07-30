@@ -10,7 +10,7 @@ def gravatar_img(email, size=140):
     return '''<img class="img-circle" src="%s" height="%s" width="%s" alt="user.avatar" />''' % (url, size, size)
   
 def get_url(email, size=140):
-    default = 'http://starwars.wikia.com/wiki/Anakin_Skywalker?file=SwKOTOR25cropped.jpg'
+    default = 'http://img1.wikia.nocookie.net/__cb20091118055536/starwars/images/e/e2/SwKOTOR25cropped.jpg'
     query_params = urlencode([('s', str(size)), ('d', default)])
     
     return ('http://www.gravatar.com/avatar/' +

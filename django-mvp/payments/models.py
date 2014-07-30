@@ -41,3 +41,4 @@ class UnpaidUsers(models.Model):
         self.save()
         if throw_error:
             raise IntegrityError
+
