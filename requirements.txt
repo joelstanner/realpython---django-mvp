@@ -3,3 +3,4 @@ mock
 requests
 stripe
 psycopg2
+django-embed-video
