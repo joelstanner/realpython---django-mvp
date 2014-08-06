@@ -6,10 +6,10 @@ from main.serializers import StatusReportSerializer
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 from collections import OrderedDict
-from io import BytesIO
+from rest_framework.compat import BytesIO
 
 
-class StatusReportSerializer_Tests(TestCase):
+class StatusReportsSerializer_Tests(TestCase):
     
     @classmethod
     def setUpClass(cls):
@@ -18,6 +18,12 @@ class StatusReportSerializer_Tests(TestCase):
         
         cls.new_status = StatusReport(user=cls.u, status="hello world")
         cls.new_status.save()
+        
+        cls.expected_dict = OrderedDict([('id', cls.new_status.id),
+                         ('user', cls.u.email),
+                         ('when', cls.new_status.when),
+                         ('status', 'hello world'),
+                                                ])
         
     @classmethod
     def tearDownClass(cls):
@@ -28,36 +34,18 @@ class StatusReportSerializer_Tests(TestCase):
     def test_model_to_dictionary(self):
         serializer = StatusReportSerializer(self.new_status)
         
-        expected_dict = {'pk': self.new_status.id,
-                         'user': 'test@test.com',
-                         'when': self.new_status.when,
-                         'status': 'hello world',
-                         }
-        self.assertEqual(expected_dict, serializer.data)
+        self.assertEqual(self.expected_dict, serializer.data)
         
     def test_dictionary_to_json(self):
         serializer = StatusReportSerializer(self.new_status)
         content = JSONRenderer().render(serializer.data)
         
-        expected_dict = OrderedDict([('pk', self.new_status.id),
-                                    ('user', 'test@test.com'),
-                                    ('when', self.new_status.when),
-                                    ('status', 'hello world'),
-                                ])
-        
-        expected_json = JSONRenderer().render(expected_dict)
+        expected_json = JSONRenderer().render(self.expected_dict)
         
         self.assertEqual(expected_json, content)
         
     def test_json_to_StatusReport(self):
-        
-        expected_dict = OrderedDict([('pk', self.new_status.id),
-                                    ('user', 'test@test.com'),
-                                    ('when', self.new_status.when),
-                                    ('status', 'hello world'),
-                                ])
-        
-        json = JSONRenderer().render(expected_dict)
+        json = JSONRenderer().render(self.expected_dict)
         stream = BytesIO(json)
         data = JSONParser().parse(stream)
         
@@ -65,5 +53,6 @@ class StatusReportSerializer_Tests(TestCase):
         self.assertTrue(serializer.is_valid())
         self.assertEqual(self.new_status.status, serializer.object.status)
         self.assertEqual(self.new_status.when, serializer.object.when)
+        self.assertEqual(self.new_status.user, serializer.object.user)
         
     

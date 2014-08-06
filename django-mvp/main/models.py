@@ -1,4 +1,5 @@
 from django.db import models
+from datetime import datetime
 #from payments.models import User
 
 
@@ -11,8 +12,21 @@ class MarketingItem(models.Model):
     
 class StatusReport(models.Model):
     user = models.ForeignKey('payments.User')
-    when = models.DateTimeField(auto_now=True)
+    when = models.DateTimeField(blank=True)
     status = models.CharField(max_length=200)
+    
+    def save(self, *args, **kwargs):
+        if self.when is None:
+            self.when = self._getNowNoMicroseconds()
+        super(StatusReport, self).save(*args, **kwargs)
+        
+    def _getNowNoMicroseconds(self):
+        """We want to get time without microseconds, so it converts
+        to JavaScript time correctly"""
+        
+        t = datetime.now()
+        return datetime(t.year, t.month, t.day, t.hour, t.minute, t.second,
+                        0, t.tzinfo)
 
 class Announcements(models.Model):
     when = models.DateTimeField(auto_now=True)

@@ -1,21 +1,20 @@
 from django.forms import widgets
 from rest_framework import serializers
 from main.models import StatusReport
+from payments.models import User
 
 
-class StatusReportSerializer(serializers.Serializer):
-    pk = serializers.Field()
-    user = serializers.RelatedField(many=False)
-    when = serializers.DateTimeField()
-    status = serializers.CharField(max_length=200)
+class RelatedUserField(serializers.RelatedField):
     
-    def restore_object(self, attrs, instance=None):
-        """create or update a new StatusReport instance"""
-        
-        if instance:
-            instance.user = attrs.get('user', instance.user)
-            instance.when = attrs.get('when', instance.when)
-            instance.status = attrs.get('status', instance.status)
-            return instance
-        
-        return StatusReport
+    read_only = False
+    
+    def from_native(self, data):
+        return User.objects.get(email=data)
+
+
+class StatusReportSerializer(serializers.ModelSerializer):
+    user = RelatedUserField(many=False)
+    
+    class Meta:
+        model = StatusReport
+        fields = ('id', 'user', 'when', 'status')
