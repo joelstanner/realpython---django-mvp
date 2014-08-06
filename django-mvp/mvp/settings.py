@@ -136,6 +136,7 @@ INSTALLED_APPS = (
     'contact',
     'payments',
     'embed_video',
+    'rest_framework',
     #'south',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
