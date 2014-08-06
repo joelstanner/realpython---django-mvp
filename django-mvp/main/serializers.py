@@ -18,3 +18,10 @@ class StatusReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = StatusReport
         fields = ('id', 'user', 'when', 'status')
+
+class BadgeSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Badge
+        fields = ('id', 'img', 'name', 'desc')
+    
