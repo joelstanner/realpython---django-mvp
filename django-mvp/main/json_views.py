@@ -1,6 +1,6 @@
 from main.permissions import IsOwnerOrReadOnly
 from main.serializers import StatusReportSerializer, BadgeSerializer
-from main.models import StatusReport
+from main.models import StatusReport, Badge
 from rest_framework import mixins, generics, permissions
 
 

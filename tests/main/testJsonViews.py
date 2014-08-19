@@ -63,11 +63,12 @@ class JsonViewTests(TestCase):
         self.assertEqual(expected_json, response.data)
     
     def test_delete_member(self):
-        status = StatusReport(user=self.test_user, status="testing")
-        status.save()
+        deleteable_status = StatusReport(user=self.test_user, status="testing")
+        deleteable_status.save()
         
-        response = StatusMember.as_view()(self.get_request(method='DELETE'),
-                                          pk=status.pk)
+        response = StatusMember.as_view()(
+                                self.get_request(method='DELETE'),
+                                pk=deleteable_status.pk)
         
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
     
