@@ -25,7 +25,7 @@ class UserForm(CardForm):
                                label=(u'Password'),
                                widget=forms.PasswordInput(render_value=False))
     ver_password = forms.CharField(required = True,
-                                 label=(u' Verify Password'),
+                                 label=(u' verify Password'),
                                  widget=forms.PasswordInput(render_value=False))
     PAYMENT_CHOICES = (('monthly', 'Monthly'),('yearly', 'Yearly'))
     sub_type = forms.ChoiceField(widget=forms.RadioSelect,

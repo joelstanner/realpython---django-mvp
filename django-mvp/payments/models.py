@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from django.utils import timezone
+from main.models import Badge
 import datetime
 
 
@@ -8,10 +9,12 @@ class User(AbstractBaseUser):
     name = models.CharField(max_length=255)
     email = models.CharField(max_length=255, unique=True)
     #password field defined in base class
+    rank = models.CharField(max_length=50, default="Padwan")
     last_4_digits = models.CharField(max_length=4, blank=True, null=True)
     stripe_id = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    badges = models.ManyToManyField(Badge)
 
     USERNAME_FIELD = 'email'
 
@@ -35,3 +38,9 @@ class User(AbstractBaseUser):
 class UnpaidUsers(models.Model):
     email = models.CharField(max_length=255, unique=True)
     last_notification = models.DateTimeField(default=timezone.now())
+    
+    def do_save(self, throw_error=None):
+        self.save()
+        if throw_error:
+            raise IntegrityError
+

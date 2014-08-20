@@ -8,8 +8,8 @@ DJANGO_ROOT = dirname(dirname(abspath(__file__)))
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-STRIPE_SECRET = 'sk_test_4MZWP7QCkDN6CYvD6UEO1Hni'
-STRIPE_PUBLISHABLE = 'pk_test_4MZWPSIFZr4pL0TpLe7olMIu'
+STRIPE_SECRET = 'sk_test_4ScRm5lrhiBxc9L5jJATs5ep'
+STRIPE_PUBLISHABLE = 'pk_test_4ScRsYPLvrKCZr9ikclOyL4F'
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
@@ -49,7 +49,7 @@ SITE_ID = 1
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
-USE_I18N = True
+USE_I18N = False    
 
 # If you set this to False, Django will not format dates, numbers and
 # calendars according to the current locale.
@@ -135,6 +135,8 @@ INSTALLED_APPS = (
     'django.contrib.flatpages',
     'contact',
     'payments',
+    'embed_video',
+    'rest_framework',
     #'south',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
