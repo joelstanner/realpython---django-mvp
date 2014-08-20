@@ -1,30 +1,13 @@
 from django.test import TestCase
-from main.models import StatusReport
-from main.serializers import StatusReportSerializer
-from main.json_views import StatusCollection, StatusMember
+from main.models import StatusReport, Badge
+from main.serializers import StatusReportSerializer, BadgeSerializer
+from main.json_views import (StatusCollection, StatusMember,
+                             BadgeCollection, BadgeMember)
 from rest_framework import status
 from rest_framework.test import APIRequestFactory, force_authenticate
 from payments.models import User
 
-
-class dummyRequest(object):
-    
-    class dummyUser(object):
-        
-        is_authed = True
-        
-        def is_authenticated(self):
-            return self.is_authed
-    
-    def __init__(self, method, authed=True):
-        self.method = method
-        self.encoding = 'utf8'
-        self.user = self.dummyUser()
-        self.user.is_authed = authed
-        self.successful_authenticator = True
-        self.QUERY_PARAMS = {}
-        self.META = {}
-        
+import pdb
         
 class JsonViewTests(TestCase):
     
@@ -72,6 +55,30 @@ class JsonViewTests(TestCase):
         
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
     
-    
+    def test_get_badges(self):
+        badges = Badge.objects.all()
+        expected_json = BadgeSerializer(badges, many=True).data
+        
+        response = BadgeCollection.as_view()(self.get_request())
+        
+        self.assertEqual(expected_json, response.data)
+        
+    def test_get_badges_requires_auth(self):
+        response = BadgeCollection.as_view()(self.get_request(authed=False))
+        
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        
+    def test_get_member_badges(self):
+        badges = Badge.objects.get(pk=1)
+        expected_json = BadgeSerializer(badges).data
+        
+        response = BadgeMember.as_view()(self.get_request(), pk=1)
+        
+        self.assertEqual(expected_json, response.data)
+        
     def test_nothing_to_return(self):
-        status = []
+        no_status = StatusReport(user=self.test_user, status="")
+        expected_json = StatusReportSerializer(no_status).data
+                
+        
+        self.assertEqual(expected_json.get('status'), '')
